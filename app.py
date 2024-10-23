@@ -52,6 +52,7 @@ def check_domain(domain: str):
                 "available": result['available'],
                 "logs": logs
             }
+        logs.append(f"{check_domain.__name__}:result == None")
     except Exception as e:
         logs.append(f"{check_domain.__name__}:Exception:{str(e)}")
     return { 
@@ -105,6 +106,7 @@ def rdap_is_available(domain, logs_append: Callable[[str], None]):
                         return True, rdap_base_url, False
                     elif response.status_code == 200:
                         return False, rdap_base_url, False
+        logs_append(f"{get_whois_server.__name__}:no RDAP")
     except Exception as e:
         logs_append(f"{rdap_is_available.__name__}:Exception:{str(e)}")
     return False, None, True
