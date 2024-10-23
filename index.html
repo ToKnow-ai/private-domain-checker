@@ -59,7 +59,7 @@
                 resultText.innerHTML = `
                 <div class="alert ${data.available ? 'alert-success' : 'alert-danger'} mt-3">
                     <strong>${data.domain ?? domain}</strong> is ${data.available ? 'available' : 'not available'}
-                    ${data.method ? `<br>(checked via ${data.method})` : ''}
+                    ${data.method ? `<br><i>(${data.method})</i>` : ''}
                 </div>
             `;
             } catch (err) {

@@ -13,7 +13,7 @@ app = Flask(__name__)
 unsupported_TLDs = [
     {
         "tld": '.ly',
-        "check": "https://reg.ly/ly-domain/"
+        "try": "https://reg.ly/ly-domain/"
     }
 ]
 
@@ -38,12 +38,16 @@ def check_domain(domain: str):
                 return { 
                     'domain': domain, 
                     "available": False, 
-                    "method": "Unsupported TLD"
+                    "method": f"Unsupported TLD, try at {unsupported_TLD.get('try')}"
                 }
 
         result = check_domain_availability(domain)
         if result:
-            return { "domain": domain, **result }
+            return { 
+                "domain": domain,
+                "method": f"Checked via {result['method']}",
+                "available": result['available'] 
+            }
     except:
         pass
     return { 
