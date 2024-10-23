@@ -139,7 +139,7 @@ def socket_whois_is_available(domain, is_available_callback: Callable[[str], boo
         whois_server = get_whois_server(domain, logs_append)
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(5)
+        sock.settimeout(15)
         sock.connect((whois_server, 43))
         sock.send(f"{domain}\r\n".encode())
         response = sock.recv(4096).decode(errors='ignore')
@@ -148,6 +148,7 @@ def socket_whois_is_available(domain, is_available_callback: Callable[[str], boo
         response_lower = response.lower()
         return is_available_callback(response_lower), whois_server
     except Exception as e:
+        logs_append(f"{socket_whois_is_available.__name__}:whois_server:{whois_server}")
         logs_append(f"{socket_whois_is_available.__name__}:Exception:{str(e)}")
     return False, None
 
