@@ -155,22 +155,24 @@ def terminal_whois_is_available(domain, is_available_callback: Callable[[str], b
     try:
         # Check if OS is Linux
         if platform.system().lower() == 'linux':
+            if which('whois') is not None:
+                # Run whois command with timeout
+                process = subprocess.Popen(
+                    ['whois', domain], 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE)
+                try:
+                    stdout, stderr = process.communicate(timeout=60)
+                    output = stdout.decode('utf-8', errors='ignore').lower()
+                    logs_append(f"{terminal_whois_is_available.__name__}:stderr:{str(stderr.decode(encoding='utf-8'))}")
+                    return is_available_callback(output), "system whois"
+                except subprocess.TimeoutExpired as timeout_e:
+                    logs_append(f"{terminal_whois_is_available.__name__}:TimeoutExpired:{str(timeout_e)}")
+                    process.kill()
+            else:
+                logs_append(f"{terminal_whois_is_available.__name__}:Exception:WHOIS not installed. Install with: sudo apt-get install whois")
+        else:
             logs_append(f"{terminal_whois_is_available.__name__}:Exception:System WHOIS check only available on Linux")
-        if which('whois') is not None:
-            logs_append(f"{terminal_whois_is_available.__name__}:Exception:WHOIS not installed. Install with: sudo apt-get install whois")
-        # Run whois command with timeout
-        process = subprocess.Popen(
-            ['whois', domain], 
-            stdout=subprocess.PIPE, 
-            stderr=subprocess.PIPE)
-        try:
-            stdout, stderr = process.communicate(timeout=60)
-            output = stdout.decode('utf-8', errors='ignore').lower()
-            logs_append(f"{terminal_whois_is_available.__name__}:stderr:{str(stderr.decode(encoding='utf-8'))}")
-            return is_available_callback(output), "system whois"
-        except subprocess.TimeoutExpired as timeout_e:
-            logs_append(f"{terminal_whois_is_available.__name__}:TimeoutExpired:{str(timeout_e)}")
-            process.kill()
     except Exception as e:
         logs_append(f"{terminal_whois_is_available.__name__}:Exception:{str(e)}")
     return False, None
