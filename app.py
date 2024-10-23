@@ -137,7 +137,6 @@ def whois_is_available(domain, logs_append: Callable[[str], None]) -> bool:
 def socket_whois_is_available(domain, is_available_callback: Callable[[str], bool], logs_append: Callable[[str], None]):
     try:
         whois_server = get_whois_server(domain, logs_append)
-        whois_server = "whois.reg.ly"
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         sock.settimeout(5)
