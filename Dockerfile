@@ -11,6 +11,8 @@ COPY --chown=user ./requirements.txt requirements.txt
 
 RUN pip install --no-cache-dir --upgrade -r requirements.txt
 
+RUN apt-get -y update && apt-get -y install whois && apt-get -y install netbase
+
 COPY --chown=user . /app
 
 CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app"]

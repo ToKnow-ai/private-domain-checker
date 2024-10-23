@@ -13,8 +13,13 @@
             <div class="col-md-6">
                 <div class="card">
                     <div class="card-body">
-                        <h3 class="text-center mb-4">Private Domain Checker - ToKnow.ai</h3>
-                        <form id="searchForm" class="mb-3">
+                        <h3 class="text-center">Private Domain Checker</h3>
+                        <p class="text-center text-body-secondary">
+                            <a href="https://toknow.ai" class="text-decoration-none text-reset">
+                                ToKnow.ai
+                            </a>
+                        </p>
+                        <form id="searchForm" class="mb-3 mt-4">
                             <div class="input-group">
                                 <input type="text" id="domain" class="form-control" placeholder="Enter domain name...">
                                 <button class="btn btn-primary" type="submit">Check</button>
@@ -24,6 +29,11 @@
                             <div class="spinner-border text-primary d-none" id="spinner"></div>
                             <div id="resultText"></div>
                         </div>
+                        <p class="text-center text-body-secondary mt-4">
+                            <a href="https://toknow.ai/about" class="text-decoration-none">
+                                Get help at ToKnow.ai
+                            </a>
+                        </p>
                     </div>
                 </div>
             </div>
@@ -43,19 +53,13 @@
             resultText.innerHTML = '';
 
             try {
-                const response = await fetch('/check', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ domain })
-                });
-
+                const response = await fetch(`/check/${domain}`, { method: 'POST' });
                 const data = await response.json();
 
                 resultText.innerHTML = `
                 <div class="alert ${data.available ? 'alert-success' : 'alert-danger'} mt-3">
-                    <strong>${domain}</strong> is ${data.available ? 'available' : 'not available'}
+                    <strong>${data.domain ?? domain}</strong> is ${data.available ? 'available' : 'not available'}
                     ${data.method ? `<br>(checked via ${data.method})` : ''}
-                    ${data.error ? `<br>(error: ${data.error})` : ''}
                 </div>
             `;
             } catch (err) {
