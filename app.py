@@ -1,11 +1,10 @@
+import random
 from typing import Callable
 from flask import Flask, send_from_directory
-import dns.resolver
-import socket
-import requests
 from urllib.parse import urlparse
 import dns.resolver
 import socket
+import requests
 import platform
 import subprocess
 from shutil import which
@@ -82,14 +81,37 @@ def check_domain_availability(domain, logs_append: Callable[[str], None]):
 def dns_is_available(domain, logs_append: Callable[[str], None]):
     """Check if domain exists in DNS by looking for common record types."""
     # Check NS records first as they're required for valid domains
-    for record_type in ['NS', 'A', 'AAAA', 'MX', 'CNAME']:
-        try:
-            dns.resolver.resolve(domain, record_type)
-            return False, record_type, False
-        except Exception as e:
-            logs_append(f"{dns_is_available.__name__}:Exception:{str(e)}")
-            continue
+    try:
+        resolver = get_dns_resolver()
+        resolver_nameservers = resolver.nameservers
+        for record_type in ['NS', 'A', 'AAAA', 'MX', 'CNAME']:
+            resolver_nameservers = []
+            try:
+                resolver.resolve(domain, record_type)
+                return False, record_type, False
+            except Exception as e:
+                logs_append(f"{dns_is_available.__name__}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
+    except Exception as e:
+        logs_append(f"{dns_is_available.__name__}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
     return True, None, True
+
+def get_dns_resolver():
+    # list of major DNS resolvers
+    resolver = dns.resolver.Resolver()
+    def myshuffle(ls):
+        random.shuffle(ls)
+        return ls
+    namesevers = { 
+        'cloudflare': myshuffle(['1.1.1.1', '1.0.0.1']),
+        'google': myshuffle(['8.8.8.8', '8.8.4.4']),
+        'quad9': myshuffle(['9.9.9.9', '149.112.112.112']),
+        'opendns': myshuffle(['208.67.222.222', '208.67.220.220']),
+        'adguard': myshuffle(['94.140.14.14', '94.140.15.15']),
+        'nextdns': myshuffle(['45.90.28.167', '45.90.30.167']),
+        'default': myshuffle(resolver.nameservers)
+    }
+    resolver.nameservers = random.choice(list(namesevers.values()))
+    return resolver
 
 def rdap_is_available(domain, logs_append: Callable[[str], None]):
     try:
