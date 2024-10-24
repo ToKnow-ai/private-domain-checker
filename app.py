@@ -161,7 +161,7 @@ def socket_whois_is_available(domain, is_available_callback: Callable[[str], boo
         whois_server = get_whois_server(domain, logs_append)
 
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(15)
+        sock.settimeout(4)
         sock.connect((whois_server, 43))
         sock.send(f"{domain}\r\n".encode())
         response = sock.recv(4096).decode(errors='ignore')
@@ -185,7 +185,7 @@ def terminal_whois_is_available(domain, is_available_callback: Callable[[str], b
                     stdout=subprocess.PIPE, 
                     stderr=subprocess.PIPE)
                 try:
-                    stdout, stderr = process.communicate(timeout=60)
+                    stdout, stderr = process.communicate(timeout=10)
                     output = stdout.decode('utf-8', errors='ignore').lower()
                     logs_append(f"{terminal_whois_is_available.__name__}:stderr:{str(stderr.decode(encoding='utf-8'))}")
                     return is_available_callback(output), "system whois"
