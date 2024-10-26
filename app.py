@@ -90,7 +90,7 @@ def dns_is_available(domain, logs_append: Callable[[str], None]):
                 resolver.resolve(domain, record_type)
                 return False, record_type, False
             except Exception as e:
-                logs_append(f"{dns_is_available.__name__}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
+                logs_append(f"{dns_is_available.__name__}:{record_type}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
     except Exception as e:
         logs_append(f"{dns_is_available.__name__}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
     return True, None, True
