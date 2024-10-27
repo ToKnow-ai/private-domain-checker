@@ -64,19 +64,31 @@ def check_domain(domain: str):
 def check_domain_availability(domain, logs_append: Callable[[str], None]):
     """Check domain availability using multiple methods."""
     # First try DNS resolution
-    is_available, availability_method, _continue = dns_is_available(domain, logs_append)
+    is_available, availability_method, _continue = dns_is_available(
+        domain, logs_append)
     if not _continue:
-        return { "available": is_available, "method": f"DNS:{availability_method}" }
+        return { 
+            "available": is_available, 
+            "method": f"DNS:{availability_method}" 
+        }
     
     # Try RDAP
-    is_available, availability_method, _continue = rdap_is_available(domain, logs_append)
+    is_available, availability_method, _continue = rdap_is_available(
+        domain, logs_append)
     if not _continue:
-        return { "available": is_available, "method": f"RDAP:{availability_method}" }
+        return { 
+            "available": is_available, 
+            "method": f"RDAP:{availability_method}" 
+        }
 
     # Fall back to WHOIS
-    is_available, availability_method, _continue = whois_is_available(domain, logs_append)
+    is_available, availability_method, _continue = whois_is_available(
+        domain, logs_append)
     if not _continue:
-        return {"available": is_available, "method": f"WHOIS:{availability_method}"}
+        return {
+            "available": is_available, 
+            "method": f"WHOIS:{availability_method}"
+        }
 
 def dns_is_available(domain, logs_append: Callable[[str], None]):
     """Check if domain exists in DNS by looking for common record types."""
@@ -90,9 +102,13 @@ def dns_is_available(domain, logs_append: Callable[[str], None]):
                 resolver.resolve(domain, record_type)
                 return False, record_type, False
             except Exception as e:
-                logs_append(f"{dns_is_available.__name__}:{record_type}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
+                logs_append(
+                    (f"{dns_is_available.__name__}:{record_type}:Exception"
+                     f":{'|'.join(resolver_nameservers)}:{str(e)}"))
     except Exception as e:
-        logs_append(f"{dns_is_available.__name__}:Exception:{'|'.join(resolver_nameservers)}:{str(e)}")
+        logs_append(
+            (f"{dns_is_available.__name__}"
+             f":Exception:{'|'.join(resolver_nameservers)}:{str(e)}"))
     return True, None, True
 
 def get_dns_resolver():
@@ -145,18 +161,24 @@ def whois_is_available(domain, logs_append: Callable[[str], None]) -> bool:
             'status: free',
             'domain not found'
         ]
-        is_available_callback = lambda output: any(pattern in output for pattern in available_patterns)
-        is_available, availability_method = socket_whois_is_available(domain, is_available_callback, logs_append)
+        is_available_callback = lambda output: any(
+            pattern in output for pattern in available_patterns)
+        is_available, availability_method = socket_whois_is_available(
+            domain, is_available_callback, logs_append)
         if is_available:
             return True, availability_method, False
-        is_available, availability_method = terminal_whois_is_available(domain, is_available_callback, logs_append)
+        is_available, availability_method = terminal_whois_is_available(
+            domain, is_available_callback, logs_append)
         if is_available:
             return True, availability_method, False
     except Exception as e:
         logs_append(f"{whois_is_available.__name__}:Exception:{str(e)}")
     return False, None, True
 
-def socket_whois_is_available(domain, is_available_callback: Callable[[str], bool], logs_append: Callable[[str], None]):
+def socket_whois_is_available(
+        domain: str, 
+        is_available_callback: Callable[[str], bool], 
+        logs_append: Callable[[str], None]):
     try:
         whois_server = get_whois_server(domain, logs_append)
 
@@ -170,11 +192,16 @@ def socket_whois_is_available(domain, is_available_callback: Callable[[str], boo
         response_lower = response.lower()
         return is_available_callback(response_lower), whois_server
     except Exception as e:
-        logs_append(f"{socket_whois_is_available.__name__}:whois_server:{whois_server}")
-        logs_append(f"{socket_whois_is_available.__name__}:Exception:{str(e)}")
+        logs_append(
+            f"{socket_whois_is_available.__name__}:whois_server:{whois_server}")
+        logs_append(
+            f"{socket_whois_is_available.__name__}:Exception:{str(e)}")
     return False, None
 
-def terminal_whois_is_available(domain, is_available_callback: Callable[[str], bool], logs_append: Callable[[str], None]):
+def terminal_whois_is_available(
+        domain: str, 
+        is_available_callback: Callable[[str], bool], 
+        logs_append: Callable[[str], None]):
     try:
         # Check if OS is Linux
         if platform.system().lower() == 'linux':
@@ -187,17 +214,27 @@ def terminal_whois_is_available(domain, is_available_callback: Callable[[str], b
                 try:
                     stdout, stderr = process.communicate(timeout=10)
                     output = stdout.decode('utf-8', errors='ignore').lower()
-                    logs_append(f"{terminal_whois_is_available.__name__}:stderr:{str(stderr.decode(encoding='utf-8'))}")
+                    logs_append(
+                        (f"{terminal_whois_is_available.__name__}"
+                         f":stderr:{str(stderr.decode(encoding='utf-8'))}"))
                     return is_available_callback(output), "system whois"
                 except subprocess.TimeoutExpired as timeout_e:
-                    logs_append(f"{terminal_whois_is_available.__name__}:TimeoutExpired:{str(timeout_e)}")
+                    logs_append(
+                        (f"{terminal_whois_is_available.__name__}"
+                         f":TimeoutExpired:{str(timeout_e)}"))
                     process.kill()
             else:
-                logs_append(f"{terminal_whois_is_available.__name__}:Exception:WHOIS not installed. Install with: sudo apt-get install whois")
+                logs_append(
+                    (f"{terminal_whois_is_available.__name__}"
+                     ":Exception:WHOIS not installed. "
+                     "Install with: sudo apt-get install whois"))
         else:
-            logs_append(f"{terminal_whois_is_available.__name__}:Exception:System WHOIS check only available on Linux")
+            logs_append(
+                (f"{terminal_whois_is_available.__name__}"
+                ":Exception:System WHOIS check only available on Linux"))
     except Exception as e:
-        logs_append(f"{terminal_whois_is_available.__name__}:Exception:{str(e)}")
+        logs_append(
+            f"{terminal_whois_is_available.__name__}:Exception:{str(e)}")
     return False, None
 
 def get_whois_server(domain, logs_append: Callable[[str], None]):
