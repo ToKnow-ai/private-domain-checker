@@ -95,20 +95,16 @@ def dns_is_available(domain, logs_append: Callable[[str], None]):
     # Check NS records first as they're required for valid domains
     try:
         resolver = get_dns_resolver()
-        resolver_nameservers = resolver.nameservers
         for record_type in ['NS', 'A', 'AAAA', 'MX', 'CNAME']:
-            resolver_nameservers = []
             try:
                 resolver.resolve(domain, record_type)
                 return False, record_type, False
             except Exception as e:
                 logs_append(
                     (f"{dns_is_available.__name__}:{record_type}:Exception"
-                     f":{'|'.join(resolver_nameservers)}:{str(e)}"))
+                     f":{'|'.join(resolver.nameservers)}:{str(e)}"))
     except Exception as e:
-        logs_append(
-            (f"{dns_is_available.__name__}"
-             f":Exception:{'|'.join(resolver_nameservers)}:{str(e)}"))
+        logs_append(f"{dns_is_available.__name__}:Exception:{str(e)}")
     return True, None, True
 
 def get_dns_resolver():
