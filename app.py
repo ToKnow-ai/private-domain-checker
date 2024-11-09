@@ -181,7 +181,8 @@ def whois_is_available(domain, logs_append: Callable[[str], None]) -> bool:
             'not registered',
             'available',
             'status: free',
-            'domain not found'
+            'domain not found',
+            'no object found'
         ]
         is_available_callback = lambda output: any(
             pattern in output for pattern in available_patterns)
