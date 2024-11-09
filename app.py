@@ -182,7 +182,29 @@ def whois_is_available(domain, logs_append: Callable[[str], None]) -> bool:
             'available',
             'status: free',
             'domain not found',
-            'no object found'
+            'no object found',
+            'not been registered',
+            'status: available',
+            'domain is available',
+            'is free',
+            'no match found',
+            'domain not registered',
+            'domain available',
+            'not exists',
+            'does not exist',
+            'no information available',
+            'registration status: unused',
+            'status: inactive',
+            'no such domain',
+            'query matched no objects',
+            'no matching record',
+            'domain status: available',
+            'this domain is not registered',
+            'domain name has not been registered',
+            'can not find domain',
+            'cannot find domain',
+            'this domain is available for purchase',
+            'domain status: free'
         ]
         is_available_callback = lambda output: any(
             pattern in output for pattern in available_patterns)
