@@ -1,0 +1,23 @@
+[
+  // Libya is unstable, sometimes official whois is unavailable
+  {
+    "tld": ".ly",
+    "info": "https://reg.ly/ly-domain/"
+  },
+  // Huggingface Blocked in CHINA
+  // https://www.chinatalk.media/p/hugging-face-blocked-self-castrating
+  {
+    "tld": ".cn",
+    "info": "https://webwhois.cnnic.cn/WhoisServlet"
+  },
+  // Blocks authomated checks and from non-european IP addresses
+  {
+    "tld": ".es",
+    "info": "https://www.dominios.es/en"
+  },
+  // Blocks automated access
+  {
+    "tld": ".gu",
+    "info": "https://tld-list.com/tld/gu#registrars"
+  }
+]

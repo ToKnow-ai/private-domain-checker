@@ -1,5 +1,7 @@
+import json5
+import os
 import random
-from typing import Callable
+from typing import Callable, Literal
 from flask import Flask, send_from_directory
 from urllib.parse import urlparse
 import dns.resolver
@@ -10,12 +12,6 @@ import subprocess
 from shutil import which
 
 app = Flask(__name__)
-unsupported_TLDs = [
-    {
-        "tld": '.ly',
-        "try": "https://reg.ly/ly-domain/"
-    }
-]
 
 @app.route('/')
 def index():
@@ -34,15 +30,6 @@ def check_domain(domain: str):
         if '://' in domain:
             domain = urlparse(domain).netloc
 
-        for unsupported_TLD in unsupported_TLDs:
-            if domain.endswith(unsupported_TLD.get('tld', '')):
-                return { 
-                    'domain': domain, 
-                    "available": False, 
-                    "method": f"Unsupported TLD, try at {unsupported_TLD.get('try')}",
-                    "logs": logs
-                }
-
         result = check_domain_availability(domain, logs.append)
         if result:
             return { 
@@ -54,10 +41,49 @@ def check_domain(domain: str):
         logs.append(f"{check_domain.__name__}:result == None")
     except Exception as e:
         logs.append(f"{check_domain.__name__}:Exception:{str(e)}")
+    return default_error(domain, logs)
+
+def default_error(domain: str, logs: list[str]):
+    cannot_confirm = "Cannot confirm if doimain is available"
+    try:
+        current_dir = os.path.dirname(os.path.abspath(__file__))
+        with open(os.path.join(current_dir, 'blocked-tlds.jsonc'), mode='r') as f:
+            blocked_tlds: list[dict[Literal["tld", "info"], str]] = json5.load(f)
+        for blocked_tld in blocked_tlds:
+            if domain.endswith(blocked_tld.get('tld')):
+                return { 
+                    'domain': domain, 
+                    "available": False, 
+                    "method": f"{cannot_confirm}, try at {blocked_tld.get('info')}",
+                    "logs": logs
+                }
+        response = requests.get("https://data.iana.org/TLD/tlds-alpha-by-domain.txt", timeout=5)
+        all_tlds = []
+        if response.ok:
+            all_tlds = response.text.split("\n")
+        else:
+            with open( os.path.join(current_dir, 'tlds-alpha-by-domain.txt'), mode='r') as f:
+                all_tlds = f.readlines()
+        all_tlds: list[str] = [
+            i.lower().strip() 
+            for i 
+            in all_tlds 
+            if len((i or '').strip()) > 0 and not i.strip().startswith("#")
+        ]
+        is_supported_tld = any(True for i in all_tlds if domain.strip().endswith(f'.{i}'))
+        if not is_supported_tld:
+            return { 
+                'domain': domain, 
+                "available": False, 
+                "method": f"Unsupported domain, \".{'.'.join(domain.split('.')[1:])}\" is not a valid domain TLD!",
+                "logs": logs
+            }
+    except Exception as e:
+        logs.append(f"{default_error.__name__}:Exception:{str(e)}")
     return { 
         'domain': domain, 
         "available": False, 
-        "method": "Cannot confirm if doimain is available",
+        "method": cannot_confirm,
         "logs": logs
     }
 
@@ -140,7 +166,7 @@ def rdap_is_available(domain, logs_append: Callable[[str], None]):
                         return True, rdap_base_url, False
                     elif response.status_code == 200:
                         return False, rdap_base_url, False
-        logs_append(f"{get_whois_server.__name__}:no RDAP")
+        logs_append(f"{rdap_is_available.__name__}:no RDAP")
     except Exception as e:
         logs_append(f"{rdap_is_available.__name__}:Exception:{str(e)}")
     return False, None, True
