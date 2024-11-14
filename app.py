@@ -2,7 +2,7 @@ import json5
 import os
 import random
 from typing import Callable, Literal
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, request
 from urllib.parse import urlparse
 import dns.resolver
 import socket
@@ -10,6 +10,7 @@ import requests
 import platform
 import subprocess
 from shutil import which
+import re
 
 app = Flask(__name__)
 
@@ -20,16 +21,16 @@ def index():
         return send_from_directory('.', 'index.html')
     except Exception as e:
         return str(e)
+    
+@app.route('/check', methods=['POST'])
+def check():
+    return check_domain(request.get_json().get('domain', ''))
 
-@app.route('/check/<domain>', methods=['POST'])
 def check_domain(domain: str):
     """Check domain availability"""
     logs: list[str] = []
     try:
-        domain = domain.lower().strip('/').strip()
-        if '://' in domain:
-            domain = urlparse(domain).netloc
-
+        domain = validate_and_correct_domain(domain)
         result = check_domain_availability(domain, logs.append)
         if result:
             return { 
@@ -42,6 +43,19 @@ def check_domain(domain: str):
     except Exception as e:
         logs.append(f"{check_domain.__name__}:Exception:{str(e)}")
     return default_error(domain, logs)
+
+def validate_and_correct_domain(domain: str):
+    # remove leding and trailing "/"
+    domain = domain.lower().strip('/').strip()
+    # extract domain 
+    domain = urlparse(domain).netloc.strip() if '://' in domain else domain
+    # remove www.
+    domain = domain.lstrip("www.").strip()
+    # remove inner spaces
+    domain = re.sub(r'[\n\s]+', '', domain).strip()
+    # replace unwanted characters with hyphens
+    domain = re.sub(r'[^a-zA-Z0-9\.]', '-', domain).strip('-').strip('.').strip()
+    return domain
 
 def default_error(domain: str, logs: list[str]):
     cannot_confirm = "Cannot confirm if doimain is available"

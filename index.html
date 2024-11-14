@@ -21,7 +21,7 @@
                         </p>
                         <form id="searchForm" class="mb-3 mt-4">
                             <div class="input-group">
-                                <input type="text" id="domain" class="form-control" placeholder="Enter domain name... eg: example.com">
+                                <input type="text" id="domain" class="form-control" placeholder="Enter domain name... eg: example.com" required/>
                                 <button class="btn btn-primary" type="submit">Check</button>
                             </div>
                         </form>
@@ -46,6 +46,10 @@
         document.getElementById('searchForm').onsubmit = async (e) => {
             e.preventDefault();
             const domain = document.getElementById('domain').value;
+            if ((domain || '').trim().length == 0){
+                return;
+            }
+
             const result = document.getElementById('result');
             const spinner = document.getElementById('spinner');
             const resultText = document.getElementById('resultText');
@@ -55,7 +59,13 @@
             resultText.innerHTML = '';
 
             try {
-                const response = await fetch(`/check/${domain}`, { method: 'POST' });
+                const response = await fetch(`/check`, { 
+                    method: 'POST', 
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ domain })
+                 });
                 const data = await response.json();
 
                 resultText.innerHTML = `
