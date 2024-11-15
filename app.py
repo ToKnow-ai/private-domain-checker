@@ -49,8 +49,12 @@ def validate_and_correct_domain(domain: str):
     domain = domain.lower().strip('/').strip()
     # extract domain 
     domain = urlparse(domain).netloc.strip() if '://' in domain else domain
+    # remove lending non alphanumeric
+    while domain and not domain[0].isalnum():
+        domain = domain[1:].strip()
     # remove www.
-    domain = domain.lstrip("www.").strip()
+    if domain.startswith("www."):
+        domain = domain[4:].strip()
     # remove inner spaces
     domain = re.sub(r'[\n\s]+', '', domain).strip()
     # replace unwanted characters with hyphens
