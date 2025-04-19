@@ -73,7 +73,7 @@
     </div>
 
     <script>
-      document.addEventListener("load", () => {
+      document.addEventListener("DOMContentLoaded", () => {
         const domain = [...new URL(location.href).searchParams]
           .find(([key, value]) => key?.toLowerCase()?.trim() === "domain")?.[1]
           ?.toLowerCase()
