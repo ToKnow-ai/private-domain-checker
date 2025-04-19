@@ -73,22 +73,7 @@
     </div>
 
     <script>
-      document.addEventListener("DOMContentLoaded", () => {
-        const domain = [...new URL(location.href).searchParams]
-          .find(([key, value]) => key?.toLowerCase()?.trim() === "domain")?.[1]
-          ?.toLowerCase()
-          ?.trim();
-        if ((domain || "").length > 0) {
-          document.getElementById("domain").value = domain;
-        }
-      });
-      document.getElementById("searchForm").onsubmit = async (e) => {
-        e.preventDefault();
-        const domain = document.getElementById("domain").value;
-        if ((domain || "").trim().length == 0) {
-          return;
-        }
-
+      const submitFn = async (domain) => {
         const result = document.getElementById("result");
         const spinner = document.getElementById("spinner");
         const resultText = document.getElementById("resultText");
@@ -125,6 +110,25 @@
             `;
         }
         spinner.classList.add("d-none");
+      };
+      document.addEventListener("DOMContentLoaded", () => {
+        const domain = [...new URL(location.href).searchParams]
+          .find(([key, value]) => key?.toLowerCase()?.trim() === "domain")?.[1]
+          ?.toLowerCase()
+          ?.trim();
+        if ((domain || "").length > 0) {
+          document.getElementById("domain").value = domain;
+          submitFn(domain);
+        }
+      });
+      document.getElementById("searchForm").onsubmit = (e) => {
+        e.preventDefault();
+        const domain = document.getElementById("domain").value;
+        if ((domain || "").trim().length == 0) {
+          return;
+        }
+
+        submitFn(domain);
       };
     </script>
   </body>
