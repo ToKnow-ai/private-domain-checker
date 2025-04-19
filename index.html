@@ -1,89 +1,129 @@
 <!DOCTYPE html>
 <html>
-
-<head>
+  <head>
     <title>Private Domain Checker | ToKnow.ai</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
 
-<body class="bg-light">
+  <body class="bg-light">
     <div class="container-fluid mt-5">
-        <div class="row justify-content-center">
-            <div class="col-lg-6 col-md-8">
-                <div class="card">
-                    <div class="card-body">
-                        <h3 class="text-center">Private Domain Checker</h3>
-                        <p class="text-center text-body-secondary">
-                            <a target="_blank" href="https://toknow.ai/posts/private-domain-checker" class="text-decoration-none text-reset">
-                                <b><u>ToKnow</u></b>.ai
-                            </a>
-                        </p>
-                        <form id="searchForm" class="mb-3 mt-4">
-                            <div class="input-group">
-                                <input type="text" id="domain" class="form-control" placeholder="Enter domain name... eg: example.com" required/>
-                                <button class="btn btn-primary" type="submit">Check</button>
-                            </div>
-                        </form>
-                        <div id="result" class="text-center d-none">
-                            <div class="spinner-border text-primary d-none" id="spinner"></div>
-                            <div id="resultText"></div>
-                        </div>
-                        <p class="text-center text-body-secondary mt-4 text-lowercase">
-                            Protecting Against <a target="_blank" href="https://toknow.ai/posts/private-domain-checker" class="text-decoration-none text-reset"><u>Domain Front-Running by Registrars</u></a> <br>
-                            <a target="_blank" href="https://toknow.ai/posts/private-domain-checker" class="text-decoration-none">
-                                <i>get help or get more details</i>
-                            </a>
-                            <img class="rounded mx-auto d-block" src="https://api.visitorbadge.io/api/visitors?path=https://toknow.ai/posts/private-domain-checker" />
-                        </p>
-                    </div>
+      <div class="row justify-content-center">
+        <div class="col-lg-6 col-md-8">
+          <div class="card">
+            <div class="card-body">
+              <h3 class="text-center">Private Domain Checker</h3>
+              <p class="text-center text-body-secondary">
+                <a
+                  target="_blank"
+                  href="https://toknow.ai/posts/private-domain-checker"
+                  class="text-decoration-none text-reset"
+                >
+                  <b><u>ToKnow</u></b
+                  >.ai
+                </a>
+              </p>
+              <form id="searchForm" class="mb-3 mt-4">
+                <div class="input-group">
+                  <input
+                    type="text"
+                    id="domain"
+                    class="form-control"
+                    placeholder="Enter domain name... eg: example.com"
+                    required
+                  />
+                  <button class="btn btn-primary" type="submit">Check</button>
                 </div>
+              </form>
+              <div id="result" class="text-center d-none">
+                <div
+                  class="spinner-border text-primary d-none"
+                  id="spinner"
+                ></div>
+                <div id="resultText"></div>
+              </div>
+              <p class="text-center text-body-secondary mt-4 text-lowercase">
+                Protecting Against
+                <a
+                  target="_blank"
+                  href="https://toknow.ai/posts/private-domain-checker"
+                  class="text-decoration-none text-reset"
+                  ><u>Domain Front-Running by Registrars</u></a
+                >
+                <br />
+                <a
+                  target="_blank"
+                  href="https://toknow.ai/posts/private-domain-checker"
+                  class="text-decoration-none"
+                >
+                  <i>get help or get more details</i>
+                </a>
+                <img
+                  class="rounded mx-auto d-block"
+                  src="https://api.visitorbadge.io/api/visitors?path=https://toknow.ai/posts/private-domain-checker"
+                />
+              </p>
             </div>
+          </div>
         </div>
+      </div>
     </div>
 
     <script>
-        document.getElementById('searchForm').onsubmit = async (e) => {
-            e.preventDefault();
-            const domain = document.getElementById('domain').value;
-            if ((domain || '').trim().length == 0){
-                return;
-            }
+      document.addEventListener("load", () => {
+        const domain = [...new URL(location.href).searchParams]
+          .find(([key, value]) => key?.toLowerCase()?.trim() === "domain")?.[1]
+          ?.toLowerCase()
+          ?.trim();
+        document.getElementById("domain").value = domain;
+      });
+      document.getElementById("searchForm").onsubmit = async (e) => {
+        e.preventDefault();
+        const domain = document.getElementById("domain").value;
+        if ((domain || "").trim().length == 0) {
+          return;
+        }
 
-            const result = document.getElementById('result');
-            const spinner = document.getElementById('spinner');
-            const resultText = document.getElementById('resultText');
+        const result = document.getElementById("result");
+        const spinner = document.getElementById("spinner");
+        const resultText = document.getElementById("resultText");
 
-            result.classList.remove('d-none');
-            spinner.classList.remove('d-none');
-            resultText.innerHTML = '';
+        result.classList.remove("d-none");
+        spinner.classList.remove("d-none");
+        resultText.innerHTML = "";
 
-            try {
-                const response = await fetch(`/check`, { 
-                    method: 'POST', 
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({ domain })
-                 });
-                const data = await response.json();
+        try {
+          const response = await fetch(`/check`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ domain }),
+          });
+          const data = await response.json();
 
-                resultText.innerHTML = `
-                <div class="alert ${data.available ? 'alert-success' : 'alert-danger'} mt-3">
-                    <strong>${data.domain ?? domain}</strong> is ${data.available ? 'available' : 'not available'}
-                    ${data.method ? `<br><i>(${data.method})</i>` : ''}
+          resultText.innerHTML = `
+                <div class="alert ${
+                  data.available ? "alert-success" : "alert-danger"
+                } mt-3">
+                    <strong>${data.domain ?? domain}</strong> is ${
+            data.available ? "available" : "not available"
+          }
+                    ${data.method ? `<br><i>(${data.method})</i>` : ""}
                 </div>
             `;
-            } catch (err) {
-                resultText.innerHTML = `
+        } catch (err) {
+          resultText.innerHTML = `
                 <div class="alert alert-warning mt-3">
                     Error checking domain
                 </div>
             `;
-            }
-            spinner.classList.add('d-none');
-        };
+        }
+        spinner.classList.add("d-none");
+      };
     </script>
-</body>
-
+  </body>
 </html>
