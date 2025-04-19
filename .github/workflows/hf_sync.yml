@@ -17,4 +17,4 @@ jobs:
       - name: Push to hub
         env:
           HF_TOKEN: ${{ secrets.HF_TOKEN }}
-        run: git push https://ToKnow-ai:$HF_TOKEN@huggingface.co/spaces/ToKnow-ai/private-domain-checker main
+        run: git push https://ToKnow-ai:$HF_TOKEN@huggingface.co/spaces/ToKnow-ai/private-domain-checker main -f
