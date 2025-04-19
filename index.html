@@ -78,7 +78,9 @@
           .find(([key, value]) => key?.toLowerCase()?.trim() === "domain")?.[1]
           ?.toLowerCase()
           ?.trim();
-        document.getElementById("domain").value = domain;
+        if ((domain || "").length > 0) {
+          document.getElementById("domain").value = domain;
+        }
       });
       document.getElementById("searchForm").onsubmit = async (e) => {
         e.preventDefault();
